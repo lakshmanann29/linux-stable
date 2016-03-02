@@ -1,0 +1,14 @@
+/*
+ * Copyright (C) 2016 Derald D. Woods <woods.technical@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+#include "logicpd-am3517-common.dtsi"
+
+/ {
+	model = "LogicPD AM35x SOM-M2";
+	compatible = "logicpd,am3517-som", "ti,am3517", "ti,omap3";
+};
