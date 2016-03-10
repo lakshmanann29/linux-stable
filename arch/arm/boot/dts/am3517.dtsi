@@ -86,7 +86,23 @@
 	status = "disabled";
 };
 
+&smartreflex_core {
+	status = "disabled";
+};
+
 &smartreflex_mpu_iva {
+	status = "disabled";
+};
+
+&sham {
+	status = "disabled";
+};
+
+&aes {
+	status = "disabled";
+};
+
+&usb_otg_hs {
 	status = "disabled";
 };
 
