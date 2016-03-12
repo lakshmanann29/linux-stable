@@ -14,6 +14,14 @@
 	model = "TI AM3517 EVM (AM3517/05 TMDSEVM3517)";
 	compatible = "ti,am3517-evm", "logicpd,am3517-som", "ti,am3517", "ti,omap3";
 
+	pwm11: dmtimer-pwm@11 {
+		compatible = "ti,omap-dmtimer-pwm";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pwm_pins>;
+		ti,timers = <&timer11>;
+		#pwm-cells = <3>;
+	};
+
 	aliases {
 		display0 = &lcd0;
 	};
@@ -49,13 +57,13 @@
 	};
 
 	bl: backlight {
-		compatible = "gpio-backlight";
+		compatible = "pwm-backlight";
 		pinctrl-names = "default";
 		pinctrl-0 = <&backlight_pins>;
-
-		gpios = <&gpio6 21 GPIO_ACTIVE_HIGH>, /* gpio_181 */
-			<&gpio6 22 GPIO_ACTIVE_HIGH>; /* gpio_182 */
-		default-on;
+		pwms = <&pwm11 0 5000000 0>;
+		brightness-levels = <0 10 20 30 40 50 60 70 80 90 100>;
+		default-brightness-level = <7>;
+		enable-gpios = <&gpio6 22 GPIO_ACTIVE_HIGH>; /* gpio_182 */
 	};
 };
 
@@ -75,9 +83,14 @@
 		>;
 	};
 
+	pwm_pins: pinmux_pwm_pins {
+		pinctrl-single,pins = <
+			OMAP3_CORE1_IOPAD(0x21dc, PIN_OUTPUT | MUX_MODE1)       /* mcspi2_cs0.gpt11_pwm */
+		>;
+	};
+
 	backlight_pins: pinmux_backlight_pins {
 		pinctrl-single,pins = <
-			OMAP3_CORE1_IOPAD(0x21dc, PIN_OUTPUT | MUX_MODE4)       /* mcspi2_cs0.gpio_181 */
 			OMAP3_CORE1_IOPAD(0x21de, PIN_OUTPUT | MUX_MODE4)       /* mcspi2_cs1.gpio_182 */
 		>;
 	};
