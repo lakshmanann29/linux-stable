@@ -269,3 +269,7 @@
 		};
 	};
 };
+
+&am35x_otg_hs {
+	status = "okay";
+};
