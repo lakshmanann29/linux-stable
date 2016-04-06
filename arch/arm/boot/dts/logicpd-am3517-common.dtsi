@@ -30,9 +30,26 @@
 		device_type = "memory";
 		reg = <0x80000000 0x10000000>; /* 256 MB */
 	};
+
+	hsusb1_vbus: hsusb1_vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "hsusb1_vbus";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		startup-delay-us = <70000>;
+	};
+
+	hsusb1_phy: hsusb1_phy {
+		compatible = "usb-nop-xceiv";
+		reset-gpios = <&gpio2 25 GPIO_ACTIVE_HIGH>; /* gpio_57 */
+		vcc-supply = <&hsusb1_vbus>;
+	};
 };
 
 &omap3_pmx_core {
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&hsusb1_reset_pins>;
 
 	tsc2004_pins: pinmux_tsc2004_pins {
 		pinctrl-single,pins = <
@@ -43,6 +60,41 @@
 	rtc_pins: pinmux_rtc_pins {
 		pinctrl-single,pins = <
 			OMAP3_CORE1_IOPAD(0x20b6, PIN_INPUT_PULLUP | MUX_MODE4) /* gpmc_ncs4.gpio_55 */
+		>;
+	};
+
+	hsusb1_reset_pins: pinmux_hsusb1_reset_pins {
+		pinctrl-single,pins = <
+			OMAP3_CORE1_IOPAD(0x20ba, PIN_OUTPUT | MUX_MODE4) /* gpmc_ncs6.gpio_57 */
+		>;
+	};
+
+	otg_drv_vbus: pinmux_otg_drv_vbus {
+		pinctrl-single,pins = <
+			OMAP3_CORE1_IOPAD(0x2210, PIN_OUTPUT | MUX_MODE4) /* usb0_drvvbus.gpio_125 */
+		>;
+	};
+};
+
+&omap3_pmx_core2 {
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&hsusb1_phy_pins>;
+
+	hsusb1_phy_pins: pinmux_hsusb1_phy_pins {
+		pinctrl-single,pins = <
+			OMAP3430_CORE2_IOPAD(0x25d8, PIN_OUTPUT | MUX_MODE3)	/* etk_clk.hsusb1_stp */
+			OMAP3430_CORE2_IOPAD(0x25da, PIN_OUTPUT | MUX_MODE3)	/* etk_ctl.hsusb1_clk */
+			OMAP3430_CORE2_IOPAD(0x25dc, PIN_INPUT | MUX_MODE3)	/* etk_d0.hsusb1_data0 */
+			OMAP3430_CORE2_IOPAD(0x25de, PIN_INPUT | MUX_MODE3)	/* etk_d1.hsusb1_data1 */
+			OMAP3430_CORE2_IOPAD(0x25e0, PIN_INPUT | MUX_MODE3)	/* etk_d2.hsusb1_data2 */
+			OMAP3430_CORE2_IOPAD(0x25e2, PIN_INPUT | MUX_MODE3)	/* etk_d3.hsusb1_data7 */
+			OMAP3430_CORE2_IOPAD(0x25e4, PIN_INPUT | MUX_MODE3)	/* etk_d4.hsusb1_data4 */
+			OMAP3430_CORE2_IOPAD(0x25e6, PIN_INPUT | MUX_MODE3)	/* etk_d5.hsusb1_data5 */
+			OMAP3430_CORE2_IOPAD(0x25e8, PIN_INPUT | MUX_MODE3)	/* etk_d6.hsusb1_data6 */
+			OMAP3430_CORE2_IOPAD(0x25ea, PIN_INPUT | MUX_MODE3)	/* etk_d7.hsusb1_data3 */
+			OMAP3430_CORE2_IOPAD(0x25ec, PIN_INPUT | MUX_MODE3)	/* etk_d8.hsusb1_dir */
+			OMAP3430_CORE2_IOPAD(0x25ee, PIN_INPUT | MUX_MODE3)	/* etk_d9.hsusb1_nxt */
 		>;
 	};
 };
@@ -156,6 +208,21 @@
 
 &mmc3 {
 	status = "disabled";
+};
+
+&usbhshost {
+	num-ports = <1>;
+	port1-mode = "ehci-phy";
+};
+
+&usbhsehci {
+	phys = <&hsusb1_phy>;
+};
+
+&am35x_otg_hs {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&otg_drv_vbus>;
 };
 
 &gpmc {
