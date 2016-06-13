@@ -1,0 +1,20 @@
+/*
+ * Copyright (C) 2016 Derald D. Woods <woods.technical@gmail.com>
+ *
+ * Based on am3517-evm.dts
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+/dts-v1/;
+
+#include "logicpd-am3517-som-wireless.dtsi"
+
+#include "am3517-evm-common.dtsi"
+
+/ {
+	model = "TI AM3517 EVM (AM3517/05 TMDSEVM3517) + Wireless";
+	compatible = "ti,am3517-evm-wireless", "logicpd,am3517-som-wireless", "ti,am3517", "ti,omap3";
+};
