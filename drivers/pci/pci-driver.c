@@ -22,6 +22,8 @@
 #include <linux/kexec.h>
 #include "pci.h"
 
+#include <trace/events/pci.h>
+
 struct pci_dynid {
 	struct list_head node;
 	struct pci_device_id id;
@@ -401,6 +403,8 @@ static int pci_device_probe(struct device *dev)
 	int error;
 	struct pci_dev *pci_dev = to_pci_dev(dev);
 	struct pci_driver *drv = to_pci_driver(dev->driver);
+
+	trace_pci_trace(0, "IN pci_device_probe");
 
 	error = pcibios_alloc_irq(pci_dev);
 	if (error < 0)

@@ -17,6 +17,8 @@
 
 #include "pci.h"
 
+#include <trace/events/pci.h>
+
 void pci_add_resource_offset(struct list_head *resources, struct resource *res,
 			     resource_size_t offset)
 {
@@ -282,6 +284,8 @@ void __weak pcibios_bus_add_device(struct pci_dev *pdev) { }
 void pci_bus_add_device(struct pci_dev *dev)
 {
 	int retval;
+
+	trace_pci_trace(0, "IN pci_bus_add_device");
 
 	/*
 	 * Can not put in pci_device_add yet because resources

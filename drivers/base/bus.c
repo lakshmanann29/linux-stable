@@ -22,6 +22,8 @@
 #include "base.h"
 #include "power/power.h"
 
+#include <trace/events/pci.h>
+
 /* /sys/devices/system */
 static struct kset *system_kset;
 
@@ -577,6 +579,8 @@ void bus_remove_device(struct device *dev)
 {
 	struct bus_type *bus = dev->bus;
 	struct subsys_interface *sif;
+
+	trace_pci_trace(0, "IN bus_remove_device");
 
 	if (!bus)
 		return;

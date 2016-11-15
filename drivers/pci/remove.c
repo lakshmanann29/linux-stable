@@ -3,6 +3,8 @@
 #include <linux/pci-aspm.h>
 #include "pci.h"
 
+#include <trace/events/pci.h>
+
 static void pci_free_resources(struct pci_dev *dev)
 {
 	int i;
@@ -31,6 +33,7 @@ static void pci_stop_dev(struct pci_dev *dev)
 
 static void pci_destroy_dev(struct pci_dev *dev)
 {
+	trace_pci_trace(0, "IN pci_destroy_pci");
 	if (!dev->dev.kobj.parent)
 		return;
 
@@ -67,6 +70,8 @@ static void pci_stop_bus_device(struct pci_dev *dev)
 	struct pci_bus *bus = dev->subordinate;
 	struct pci_dev *child, *tmp;
 
+	trace_pci_trace(0, "IN pci_stop_bus_device");
+
 	/*
 	 * Stopping an SR-IOV PF device removes all the associated VFs,
 	 * which will update the bus->devices list and confuse the
@@ -86,6 +91,8 @@ static void pci_remove_bus_device(struct pci_dev *dev)
 {
 	struct pci_bus *bus = dev->subordinate;
 	struct pci_dev *child, *tmp;
+
+	trace_pci_trace(0, "IN pci_remove_bus_device");
 
 	if (bus) {
 		list_for_each_entry_safe(child, tmp,
@@ -113,6 +120,7 @@ static void pci_remove_bus_device(struct pci_dev *dev)
  */
 void pci_stop_and_remove_bus_device(struct pci_dev *dev)
 {
+	trace_pci_trace(0, "IN pci_stop_and_remove_bus_device");
 	pci_stop_bus_device(dev);
 	pci_remove_bus_device(dev);
 }

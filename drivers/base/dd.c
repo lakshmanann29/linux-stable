@@ -29,6 +29,8 @@
 #include "base.h"
 #include "power/power.h"
 
+#include <trace/events/pci.h>
+
 /*
  * Deferred Probe infrastructure.
  *
@@ -330,6 +332,8 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 	int ret = -EPROBE_DEFER;
 	int local_trigger_count = atomic_read(&deferred_trigger_count);
 
+	trace_pci_trace(0, "IN really_probe");
+
 	if (defer_all_probes) {
 		/*
 		 * Value of defer_all_probes can be set only by
@@ -378,6 +382,7 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 		if (ret)
 			goto probe_failed;
 	} else if (drv->probe) {
+		trace_pci_trace(0, "calling driver's probe");
 		ret = drv->probe(dev);
 		if (ret)
 			goto probe_failed;
@@ -486,6 +491,8 @@ int driver_probe_device(struct device_driver *drv, struct device *dev)
 {
 	int ret = 0;
 
+	trace_pci_trace(0, "IN driver_probe_device");
+
 	if (!device_is_registered(dev))
 		return -ENODEV;
 
@@ -562,6 +569,8 @@ static int __device_attach_driver(struct device_driver *drv, void *_data)
 	bool async_allowed;
 	int ret;
 
+	trace_pci_trace(0, "IN __device_attach_driver");
+
 	/*
 	 * Check if device has already been claimed. This may
 	 * happen with driver loading, device discovery/registration,
@@ -624,6 +633,8 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
 static int __device_attach(struct device *dev, bool allow_async)
 {
 	int ret = 0;
+
+	trace_pci_trace(0, "IN __device_attach");
 
 	device_lock(dev);
 	if (dev->driver) {
@@ -779,7 +790,10 @@ static void __device_release_driver(struct device *dev)
 		if (dev->bus && dev->bus->remove)
 			dev->bus->remove(dev);
 		else if (drv->remove)
+		{
+			trace_pci_trace(0, "calling driver's remove entry point");
 			drv->remove(dev);
+		}
 		devres_release_all(dev);
 		dev->driver = NULL;
 		dev_set_drvdata(dev, NULL);
@@ -805,6 +819,7 @@ static void __device_release_driver(struct device *dev)
  */
 void device_release_driver(struct device *dev)
 {
+	trace_pci_trace(0, "IN device_release_driver");
 	/*
 	 * If anyone calls device_release_driver() recursively from
 	 * within their ->remove callback for the same device, they

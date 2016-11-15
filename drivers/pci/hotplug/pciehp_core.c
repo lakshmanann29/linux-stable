@@ -37,6 +37,8 @@
 #include <linux/interrupt.h>
 #include <linux/time.h>
 
+#include <trace/events/pci.h>
+
 /* Global variables */
 bool pciehp_debug;
 bool pciehp_poll_mode;
@@ -158,6 +160,8 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
 {
 	struct slot *slot = hotplug_slot->private;
 
+	trace_pci_trace(0, "IN enable_slot");
+
 	return pciehp_sysfs_enable_slot(slot);
 }
 
@@ -165,6 +169,8 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
 static int disable_slot(struct hotplug_slot *hotplug_slot)
 {
 	struct slot *slot = hotplug_slot->private;
+
+	trace_pci_trace(0, "IN disable_slot");
 
 	return pciehp_sysfs_disable_slot(slot);
 }
@@ -214,6 +220,8 @@ static int pciehp_probe(struct pcie_device *dev)
 	struct controller *ctrl;
 	struct slot *slot;
 	u8 occupied, poweron;
+
+	trace_pci_trace(0, "IN pciehp_probe");
 
 	/* If this is not a "hotplug" service, we have no business here. */
 	if (dev->service != PCIE_PORT_SERVICE_HP)
@@ -291,6 +299,8 @@ static int pciehp_resume(struct pcie_device *dev)
 	struct controller *ctrl;
 	struct slot *slot;
 	u8 status;
+
+	trace_pci_trace(0, "IN pciehp_resume");
 
 	ctrl = get_service_data(dev);
 

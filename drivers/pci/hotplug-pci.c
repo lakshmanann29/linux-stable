@@ -4,12 +4,14 @@
 #include <linux/export.h>
 #include "pci.h"
 
+#include <trace/events/pci.h>
 int pci_hp_add_bridge(struct pci_dev *dev)
 {
 	struct pci_bus *parent = dev->bus;
 	int pass, busnr, start = parent->busn_res.start;
 	int end = parent->busn_res.end;
 
+	trace_pci_trace(0, "IN pci_hp_add_bridge");
 	for (busnr = start; busnr <= end; busnr++) {
 		if (!pci_find_bus(pci_domain_nr(parent), busnr))
 			break;

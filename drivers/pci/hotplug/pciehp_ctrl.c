@@ -35,6 +35,8 @@
 #include "../pci.h"
 #include "pciehp.h"
 
+#include <trace/events/pci.h>
+
 static void interrupt_event_handler(struct work_struct *work);
 
 void pciehp_queue_interrupt_event(struct slot *p_slot, u32 event_type)
@@ -88,6 +90,8 @@ static int board_added(struct slot *p_slot)
 	struct controller *ctrl = p_slot->ctrl;
 	struct pci_bus *parent = ctrl->pcie->port->subordinate;
 
+	trace_pci_trace(0, "IN board_added");
+
 	if (POWER_CTRL(ctrl)) {
 		/* Power on slot */
 		retval = pciehp_power_on_slot(p_slot);
@@ -136,6 +140,8 @@ static int remove_board(struct slot *p_slot)
 	int retval;
 	struct controller *ctrl = p_slot->ctrl;
 
+	trace_pci_trace(0, "IN remove_board");
+
 	retval = pciehp_unconfigure_device(p_slot);
 	if (retval)
 		return retval;
@@ -178,9 +184,12 @@ static void pciehp_power_thread(struct work_struct *work)
 	struct slot *p_slot = info->p_slot;
 	int ret;
 
+	trace_pci_trace(0, "IN pciehp_power_thread");
+
 	switch (info->req) {
 	case DISABLE_REQ:
 		mutex_lock(&p_slot->hotplug_lock);
+		trace_pci_trace(0, "calling pciehp_disable_slot");
 		pciehp_disable_slot(p_slot);
 		mutex_unlock(&p_slot->hotplug_lock);
 		mutex_lock(&p_slot->lock);
@@ -189,6 +198,7 @@ static void pciehp_power_thread(struct work_struct *work)
 		break;
 	case ENABLE_REQ:
 		mutex_lock(&p_slot->hotplug_lock);
+		trace_pci_trace(0, "calling pciehp_enable_slot");
 		ret = pciehp_enable_slot(p_slot);
 		mutex_unlock(&p_slot->hotplug_lock);
 		if (ret)
@@ -208,6 +218,8 @@ static void pciehp_queue_power_work(struct slot *p_slot, int req)
 {
 	struct power_work_info *info;
 
+	trace_pci_trace(0, "IN pciehp_queue_power_work");
+
 	p_slot->state = (req == ENABLE_REQ) ? POWERON_STATE : POWEROFF_STATE;
 
 	info = kmalloc(sizeof(*info), GFP_KERNEL);
@@ -225,6 +237,8 @@ static void pciehp_queue_power_work(struct slot *p_slot, int req)
 void pciehp_queue_pushbutton_work(struct work_struct *work)
 {
 	struct slot *p_slot = container_of(work, struct slot, work.work);
+
+	trace_pci_trace(0, "IN pciehp_queue_pushbutton_work");
 
 	mutex_lock(&p_slot->lock);
 	switch (p_slot->state) {
@@ -305,11 +319,19 @@ static void handle_surprise_event(struct slot *p_slot)
 {
 	u8 getstatus;
 
+	trace_pci_trace(0, "IN handle_surprise_event");
+
 	pciehp_get_adapter_status(p_slot, &getstatus);
 	if (!getstatus)
+	{
+		trace_pci_trace(0, "DISABLE_REQ");
 		pciehp_queue_power_work(p_slot, DISABLE_REQ);
+	}
 	else
+	{
+		trace_pci_trace(0, "ENABLE_REQ");
 		pciehp_queue_power_work(p_slot, ENABLE_REQ);
+	}
 }
 
 /*
@@ -318,6 +340,8 @@ static void handle_surprise_event(struct slot *p_slot)
 static void handle_link_event(struct slot *p_slot, u32 event)
 {
 	struct controller *ctrl = p_slot->ctrl;
+	
+	trace_pci_trace(0, "IN handle_link_event");
 
 	switch (p_slot->state) {
 	case BLINKINGON_STATE:
@@ -330,10 +354,12 @@ static void handle_link_event(struct slot *p_slot, u32 event)
 		break;
 	case POWERON_STATE:
 		if (event == INT_LINK_UP) {
+			trace_pci_trace(0, "INT_LINK_UP");
 			ctrl_info(ctrl,
 				  "Link Up event ignored on slot(%s): already powering on\n",
 				  slot_name(p_slot));
 		} else {
+			trace_pci_trace(0, "INT_LINK_DOWN");
 			ctrl_info(ctrl,
 				  "Link Down event queued on slot(%s): currently getting powered on\n",
 				  slot_name(p_slot));
@@ -365,6 +391,8 @@ static void interrupt_event_handler(struct work_struct *work)
 	struct slot *p_slot = info->p_slot;
 	struct controller *ctrl = p_slot->ctrl;
 
+	trace_pci_trace(0, "IN interrupt_event_handler");
+
 	mutex_lock(&p_slot->lock);
 	switch (info->event_type) {
 	case INT_BUTTON_PRESS:
@@ -377,6 +405,7 @@ static void interrupt_event_handler(struct work_struct *work)
 		pciehp_green_led_off(p_slot);
 		break;
 	case INT_PRESENCE_ON:
+		trace_pci_trace(0, "PRESENCE ON");
 		handle_surprise_event(p_slot);
 		break;
 	case INT_PRESENCE_OFF:
@@ -384,6 +413,7 @@ static void interrupt_event_handler(struct work_struct *work)
 		 * Regardless of surprise capability, we need to
 		 * definitely remove a card that has been pulled out!
 		 */
+		trace_pci_trace(0, "PRESENCE OFF");
 		handle_surprise_event(p_slot);
 		break;
 	case INT_LINK_UP:
@@ -406,6 +436,8 @@ int pciehp_enable_slot(struct slot *p_slot)
 	u8 getstatus = 0;
 	int rc;
 	struct controller *ctrl = p_slot->ctrl;
+
+	trace_pci_trace(0, "IN pciehp_enable_slot");
 
 	pciehp_get_adapter_status(p_slot, &getstatus);
 	if (!getstatus) {
@@ -446,6 +478,7 @@ int pciehp_disable_slot(struct slot *p_slot)
 {
 	u8 getstatus = 0;
 	struct controller *ctrl = p_slot->ctrl;
+	trace_pci_trace(0, "IN pciehp_disable_slot");
 
 	if (!p_slot->ctrl)
 		return 1;
@@ -466,6 +499,8 @@ int pciehp_sysfs_enable_slot(struct slot *p_slot)
 {
 	int retval = -ENODEV;
 	struct controller *ctrl = p_slot->ctrl;
+
+	trace_pci_trace(0, "IN pciehp_sysfs_enable_slot");
 
 	mutex_lock(&p_slot->lock);
 	switch (p_slot->state) {

@@ -31,6 +31,8 @@
 #include "base.h"
 #include "power/power.h"
 
+#include <trace/events/pci.h>
+
 #ifdef CONFIG_SYSFS_DEPRECATED
 #ifdef CONFIG_SYSFS_DEPRECATED_V2
 long sysfs_deprecated = 1;
@@ -1233,6 +1235,8 @@ void device_del(struct device *dev)
 {
 	struct device *parent = dev->parent;
 	struct class_interface *class_intf;
+
+	trace_pci_trace(0, "IN device_del");
 
 	/* Notify clients of device removal.  This call must come
 	 * before dpm_sysfs_remove().

@@ -34,6 +34,9 @@
 #include "../pci.h"
 #include "pciehp.h"
 
+#define CREATE_TRACE_POINTS
+#include <trace/events/pci.h>
+
 int pciehp_configure_device(struct slot *p_slot)
 {
 	struct pci_dev *dev;
@@ -41,6 +44,8 @@ int pciehp_configure_device(struct slot *p_slot)
 	struct pci_bus *parent = bridge->subordinate;
 	int num, ret = 0;
 	struct controller *ctrl = p_slot->ctrl;
+
+	trace_pci_trace(0, "IN pciehp_configure_device");
 
 	pci_lock_rescan_remove();
 
@@ -82,6 +87,8 @@ int pciehp_unconfigure_device(struct slot *p_slot)
 	struct pci_bus *parent = p_slot->ctrl->pcie->port->subordinate;
 	u16 command;
 	struct controller *ctrl = p_slot->ctrl;
+
+	trace_pci_trace(0, "IN pciehp_unconfigure_device");
 
 	ctrl_dbg(ctrl, "%s: domain:bus:dev = %04x:%02x:00\n",
 		 __func__, pci_domain_nr(parent), parent->number);
